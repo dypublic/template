@@ -75,6 +75,30 @@ const (
 	NodeContinue                   // A continue action.
 )
 
+var NodeTypeName = map[NodeType]string{
+	NodeText:       "NodeText",
+	NodeAction:     "NodeAction",
+	NodeBool:       "NodeBool",
+	NodeChain:      "NodeChain",
+	NodeCommand:    "NodeCommand",
+	NodeDot:        "NodeDot",
+	NodeField:      "NodeField",
+	NodeIdentifier: "NodeIdentifier",
+	NodeIf:         "NodeIf",
+	NodeList:       "NodeList",
+	NodeNil:        "NodeNil",
+	NodeNumber:     "NodeNumber",
+	NodePipe:       "NodePipe",
+	NodeRange:      "NodeRange",
+	NodeString:     "NodeString",
+	NodeTemplate:   "NodeTemplate",
+	NodeVariable:   "NodeVariable",
+	NodeWith:       "NodeWith",
+	NodeComment:    "NodeComment",
+	NodeBreak:      "NodeBreak",
+	NodeContinue:   "NodeContinue",
+}
+
 // Nodes.
 
 // ListNode holds a sequence of nodes.

@@ -12,8 +12,10 @@ func TraceF(format string, a ...any) {
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
 	name := strings.Split(frame.Function, "/")
-	format = "%-28s: " + format + "\n"
+	format = "%s:%d %-28s: " + format + "\n"
 	var params []any
+	params = append(params, frame.File)
+	params = append(params, frame.Line)
 	params = append(params, name[len(name)-1])
 	params = append(params, a...)
 	fmt.Printf(format, params...)

@@ -351,6 +351,10 @@ func (t *Tree) parseDefinition() {
 // Terminates at {{end}} or {{else}}, returned separately.
 func (t *Tree) itemList() (list *ListNode, next Node) {
 	list = t.newList(t.peekNonSpace().pos)
+	defer func() {
+		debug.TraceF("itemList %s, next:%s", list.String(), next.String())
+	}()
+
 	for t.peekNonSpace().typ != itemEOF {
 		n := t.textOrAction()
 		switch n.Type() {

@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strings"
 
+	"template_light/template/debug"
 	"template_light/template/internal/fmtsort"
 	"template_light/template/parse"
 )
@@ -255,6 +256,7 @@ var (
 // generating output as they go.
 func (s *state) walk(dot reflect.Value, node parse.Node) {
 	s.at(node)
+	debug.TraceF("walk node %s %s", parse.NodeTypeName[node.Type()], node.String())
 	switch node := node.(type) {
 	case *parse.ActionNode:
 		// Do not pop variables so they persist until next end.
