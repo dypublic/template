@@ -587,7 +587,11 @@ func (s *state) evalVariableNode(dot reflect.Value, variable *parse.VariableNode
 // receiver is the value being walked along the chain.
 func (s *state) evalFieldChain(dot, receiver reflect.Value, node parse.Node, ident []string, args []parse.Node, final reflect.Value) reflect.Value {
 	n := len(ident)
-	for i := 0; i < n-1; i++ {
+	start := 0
+	if node.(*parse.FieldNode).RootType {
+		start = 1
+	}
+	for i := start; i < n-1; i++ {
 		receiver = s.evalField(dot, ident[i], node, nil, missingVal, receiver)
 	}
 	// Now if it's a method, it gets the arguments.

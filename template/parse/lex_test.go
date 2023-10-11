@@ -45,6 +45,7 @@ var itemName = map[itemType]string{
 	itemRange:    "range",
 	itemTemplate: "template",
 	itemWith:     "with",
+	itemRoot:     "ROOT",
 }
 
 func (i itemType) String() string {

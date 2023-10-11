@@ -9,6 +9,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"template_light/template/debug"
 )
 
 // item represents a token or text string returned from the scanner.
@@ -73,6 +75,7 @@ const (
 	itemRange    // range keyword
 	itemTemplate // template keyword
 	itemWith     // with keyword
+	itemRoot     // root of obj ref
 )
 
 var itemTypeName = map[itemType]string{
@@ -111,6 +114,7 @@ var itemTypeName = map[itemType]string{
 	itemRange:        "itemRange",
 	itemTemplate:     "itemTemplate",
 	itemWith:         "itemWith",
+	itemRoot:         "ROOT",
 }
 
 var key = map[string]itemType{
@@ -126,6 +130,7 @@ var key = map[string]itemType{
 	"nil":      itemNil,
 	"template": itemTemplate,
 	"with":     itemWith,
+	"ROOT":     itemRoot,
 }
 
 const eof = -1
@@ -239,7 +244,11 @@ func (l *lexer) errorf(format string, args ...any) stateFn {
 // nextItem returns the next item from the input.
 // Called by the parser, not in the lexing goroutine.
 func (l *lexer) nextItem() item {
-	return <-l.items
+	item := <-l.items
+	if item.typ == itemRoot {
+		debug.TraceF("next item type %s %s", itemTypeName[item.typ], item.String())
+	}
+	return item
 }
 
 // drain drains the output so the lexing goroutine will exit.
@@ -512,6 +521,8 @@ Loop:
 				item := key[word]
 				if item == itemBreak && !l.breakOK || item == itemContinue && !l.continueOK {
 					l.emit(itemIdentifier)
+				} else if item == itemRoot {
+					l.emit(item)
 				} else {
 					l.emit(item)
 				}

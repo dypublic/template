@@ -1,7 +1,8 @@
 package main
 
 import (
-	"os"
+	"fmt"
+	"strings"
 
 	"template_light/template"
 )
@@ -24,7 +25,7 @@ func main() {
 	f2 := Friend{Fname: "wugui"}
 	t := template.New("test")
 	t = template.Must(t.Parse(`
-hello {{.UserName}} at {{.HomeTown.City}}!
+hello {{.UserName}} at {{ ROOT.HomeTown.City}}!
 {{ range .Emails }}
 an email {{ . }}
 {{- end }}
@@ -34,12 +35,13 @@ my friend name is {{.Fname}}
 {{- end }}
 {{ end }}`))
 	//{{define "x"}}x{{end}}
-	//{{template "y"}}`
+	//{{template "y"}}`))
 	p := Person{UserName: "longshuai",
 		Emails:   []string{"a1@qq.com", "a2@gmail.com"},
 		Friends:  []*Friend{&f1, &f2},
 		HomeTown: HomeTown{"sh"},
 	}
-
-	t.Execute(os.Stdout, p)
+	strBuff := strings.Builder{}
+	t.Execute(&strBuff, p)
+	fmt.Println(strBuff.String())
 }

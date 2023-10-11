@@ -402,6 +402,9 @@ func (t *Tree) clearActionLine() {
 func (t *Tree) action() (n Node) {
 	token := t.nextNonSpace()
 	debug.TraceF("token type %s %s", itemTypeName[token.typ], token.String())
+	if token.String() == "ROOT" {
+		debug.TraceF("token type %s %s", itemTypeName[token.typ], token.String())
+	}
 	switch token.typ {
 	case itemBlock:
 		return t.blockControl()
@@ -512,6 +515,9 @@ decls:
 			return
 		case itemBool, itemCharConstant, itemComplex, itemDot, itemField, itemIdentifier,
 			itemNumber, itemNil, itemRawString, itemString, itemVariable, itemLeftParen:
+			t.backup()
+			pipe.append(t.command())
+		case itemRoot:
 			t.backup()
 			pipe.append(t.command())
 		default:
@@ -725,7 +731,9 @@ func (t *Tree) command() *CommandNode {
 		if operand != nil {
 			cmd.append(operand)
 		}
-		switch token := t.next(); token.typ {
+		token := t.next()
+		debug.TraceF("token type %s %s", itemTypeName[token.typ], token.String())
+		switch token.typ {
 		case itemSpace:
 			continue
 		case itemRightDelim, itemRightParen:
@@ -768,7 +776,8 @@ func (t *Tree) operand() Node {
 		// More complex error cases will have to be handled at execution time.
 		switch node.Type() {
 		case NodeField:
-			node = t.newField(chain.Position(), chain.String())
+			fNode := node.(*FieldNode)
+			node = t.newField(chain.Position(), chain.String(), fNode.RootType)
 		case NodeVariable:
 			node = t.newVariable(chain.Position(), chain.String())
 		case NodeBool, NodeString, NodeNumber, NodeNil, NodeDot:
@@ -797,6 +806,9 @@ func (t *Tree) term() Node {
 	switch token.typ {
 	case itemIdentifier:
 		checkFunc := t.Mode&SkipFuncCheck == 0
+		if token.val == "ROOT" {
+			debug.TraceF("token type %s %s", itemTypeName[token.typ], token.String())
+		}
 		if checkFunc && !t.hasFunction(token.val) {
 			t.errorf("function %q not defined", token.val)
 		}
@@ -808,7 +820,9 @@ func (t *Tree) term() Node {
 	case itemVariable:
 		return t.useVar(token.pos, token.val)
 	case itemField:
-		return t.newField(token.pos, token.val)
+		return t.newField(token.pos, token.val, false)
+	case itemRoot:
+		return t.newField(token.pos, token.val, true)
 	case itemBool:
 		return t.newBool(token.pos, token.val == "true")
 	case itemCharConstant, itemComplex, itemNumber:

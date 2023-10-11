@@ -518,12 +518,17 @@ func (n *NilNode) Copy() Node {
 type FieldNode struct {
 	NodeType
 	Pos
-	tr    *Tree
-	Ident []string // The identifiers in lexical order.
+	tr       *Tree
+	Ident    []string // The identifiers in lexical order.
+	RootType bool
 }
 
-func (t *Tree) newField(pos Pos, ident string) *FieldNode {
-	return &FieldNode{tr: t, NodeType: NodeField, Pos: pos, Ident: strings.Split(ident[1:], ".")} // [1:] to drop leading period
+func (t *Tree) newField(pos Pos, ident string, rootType bool) *FieldNode {
+	if !rootType {
+		ident = ident[1:]
+	}
+	return &FieldNode{tr: t, NodeType: NodeField, Pos: pos,
+		Ident: strings.Split(ident, "."), RootType: rootType} // [1:] to drop leading period
 }
 
 func (f *FieldNode) String() string {
@@ -533,10 +538,15 @@ func (f *FieldNode) String() string {
 }
 
 func (f *FieldNode) writeTo(sb *strings.Builder) {
-	for _, id := range f.Ident {
+	sb.WriteString(f.Ident[0])
+	for _, id := range f.Ident[1:] {
 		sb.WriteByte('.')
 		sb.WriteString(id)
 	}
+	//for _, id := range f.Ident {
+	//	sb.WriteByte('.')
+	//	sb.WriteString(id)
+	//}
 }
 
 func (f *FieldNode) tree() *Tree {
@@ -546,6 +556,42 @@ func (f *FieldNode) tree() *Tree {
 func (f *FieldNode) Copy() Node {
 	return &FieldNode{tr: f.tr, NodeType: NodeField, Pos: f.Pos, Ident: append([]string{}, f.Ident...)}
 }
+
+//// RootFieldNode holds a field (identifier starting with 'ROOT').
+//// The names may be chained ('ROOT.x.y').
+//// The period is dropped from each ident.
+//type RootFieldNode struct {
+//	NodeType
+//	Pos
+//	tr    *Tree
+//	Ident []string // The identifiers in lexical order.
+//}
+//
+//func (t *Tree) newRootField(pos Pos, ident string) *RootFieldNode {
+//	return &RootFieldNode{tr: t, NodeType: NodeField, Pos: pos, Ident: strings.Split(ident, ".")} // [1:] to drop leading period
+//}
+//
+//func (f *RootFieldNode) String() string {
+//	var sb strings.Builder
+//	f.writeTo(&sb)
+//	return sb.String()
+//}
+//
+//func (f *RootFieldNode) writeTo(sb *strings.Builder) {
+//	sb.WriteString(f.Ident[0])
+//	for _, id := range f.Ident[1:] {
+//		sb.WriteByte('.')
+//		sb.WriteString(id)
+//	}
+//}
+//
+//func (f *RootFieldNode) tree() *Tree {
+//	return f.tr
+//}
+//
+//func (f *RootFieldNode) Copy() Node {
+//	return &FieldNode{tr: f.tr, NodeType: NodeField, Pos: f.Pos, Ident: append([]string{}, f.Ident...)}
+//}
 
 // ChainNode holds a term followed by a chain of field accesses (identifier starting with '.').
 // The names may be chained ('.x.y').
